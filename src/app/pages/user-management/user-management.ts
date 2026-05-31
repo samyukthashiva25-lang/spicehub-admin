@@ -334,15 +334,15 @@ export class UserManagement implements OnInit {
 
   // 3. Email Validation Syntax Processing Engine Check
   const cleanEmail = this.newUser.emailid ? this.newUser.emailid.trim().toLowerCase() : '';
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   
-  if (!cleanEmail) {
-    this.notify.warning('Email address is mandatory for invoice processing tracking.');
-    return;
-  } else if (!emailRegex.test(cleanEmail)) {
-    this.notify.warning('The email address format provided is invalid.');
-    return;
-  }
+  // if (!cleanEmail) {
+  //   this.notify.warning('Email address is mandatory for invoice processing tracking.');
+  //   return;
+  // } else if (!emailRegex.test(cleanEmail)) {
+  //   this.notify.warning('The email address format provided is invalid.');
+  //   return;
+  // }
 
   // 4. Conditional Tax Profile GST Structural Validation Gate
   const cleanGst = this.newUser.gstnumber ? this.newUser.gstnumber.trim().toUpperCase() : '';
