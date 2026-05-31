@@ -1,4 +1,4 @@
 export const environment = {
   production: false,
-  apiUrl: 'https://spiceshub-production.up.railway.app/'
+  apiUrl: 'https://spiceshub-production.up.railway.app'
 };
