@@ -1,0 +1,187 @@
+<div class="add-product-container">
+  
+  <div class="breadcrumb-header">
+    <button class="back-link-btn" routerLink="/products"><i class="bi bi-chevron-left"></i> Back</button>
+    <div class="title-meta">
+      <h2>{{ isEditing ? 'Edit Product' : 'Add New Product' }}</h2>
+      <p>Fill in the details to list a product in the catalogue</p>
+    </div>
+  </div>
+
+  <div class="workspace-grid">
+    
+    <div class="main-form-panel">
+      
+      <div class="form-card">
+        <h4>Basic Information</h4>
+        <div class="card-body row-layout">
+          
+          <div class="form-field width-30">
+            <label>Product ID (Auto-generated)</label>
+            <input type="text" [value]="product.productid" disabled class="disabled-input">
+          </div>
+
+          <div class="form-field width-100">
+            <label>Product Name<span class="asterisk">*</span></label>
+            <input type="text" placeholder="e.g. Premium Turmeric Powder" [(ngModel)]="product.productname">
+          </div>
+
+          <div class="form-field width-50">
+            <label>Category<span class="asterisk">*</span></label>
+            <select [(ngModel)]="product.category">
+              <option value="">Select category</option>
+              <option value="Spices">Spices</option>
+              <option value="Nuts">Nuts</option>
+              <option value="Seeds">Seeds</option>
+              <option value="Dry Fruits">Dry Fruits</option>
+              <option value="Herbs">Herbs</option>
+              <option value="Blends">Blends</option>
+            </select>
+          </div>
+
+          <div class="form-field width-50">
+            <label>Unit<span class="asterisk">*</span></label>
+            <select [(ngModel)]="product.variant">
+              <option value="">kg / g / piece</option>
+              <option value="kg">kg</option>
+              <option value="g">g</option>
+              <option value="piece">piece</option>
+            </select>
+          </div>
+
+          <div class="form-field width-100">
+            <label>Product Description</label>
+            <textarea rows="4" placeholder="Describe the product — origin, quality grade, storage instructions, etc." [(ngModel)]="product.description"></textarea>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="form-card">
+        <h4>Variant Configuration</h4>
+        <p class="section-subtitle">Define each variant type (Loose / Bag / Packing) with weights and pricing</p>
+        <div class="card-body">
+          
+          <table class="variants-matrix-table">
+            <thead>
+              <tr>
+                <th>Variant Type</th>
+                <th>Weight (high-spec)</th>
+                <th>Price / kg</th>
+                <th>Min. Order</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of variantsRows; let i = index">
+                <td><input type="text" class="cell-input type-badge" [(ngModel)]="item.type" placeholder="e.g Loose"></td>
+                <td><input type="text" class="cell-input" [(ngModel)]="item.weight" placeholder="1 kg, 5 kg"></td>
+                <td><input type="text" class="cell-input" [(ngModel)]="item.price" placeholder="Rs. 180"></td>
+                <td><input type="text" class="cell-input" [(ngModel)]="item.minOrder" placeholder="5 kg"></td>
+                <td>
+                  <button type="button" class="delete-row-btn" (click)="removeVariantRow(i)" [disabled]="variantsRows.length === 1">
+                    <i class="bi bi-trash3"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <button type="button" class="add-variant-btn" (click)="addNewVariantRow()">+ Add Variant</button>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="sidebar-meta-panel">
+      
+      <div class="form-card">
+        <h4>Product Images</h4>
+        <p class="section-subtitle">Upload your cover thumbnail image asset.</p>
+        <div class="card-body">
+          <div class="media-dropzone">
+            <div class="preview-thumbnail-holder" *ngIf="product.image || product.images">
+              <img [src]="product.image || product.images" alt="Cover Preview" class="dropped-img-preview">
+            </div>
+
+            <i class="bi bi-upload drag-cloud-icon" *ngIf="!product.image && !product.images"></i>
+            <p class="drop-text" *ngIf="!product.image && !product.images">Select product configuration images here</p>
+            <span class="or-separator" *ngIf="!product.image && !product.images">or</span>
+            
+            <button type="button" class="files-selector-btn" (click)="imageInput.click()">
+              Browse Files
+            </button>
+            
+            <input 
+              type="file" 
+              #imageInput 
+              style="display: none;" 
+              accept="image/*" 
+              (change)="handleProductImageUpload($event)"
+            >
+            <span class="formats-hint">PNG, JPG, WEBP • Max 5MB each</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <div class="toggle-card-header">
+          <div class="header-text">
+            <h4>Product Status</h4>
+            <p class="section-subtitle">Active (visible to all buyers)</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" [(ngModel)]="product.ispublished">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <h4>Product Tags & Badges</h4>
+        <p class="section-subtitle">Help buyers find this product faster</p>
+        <div class="card-body">
+          
+          <div class="badges-flex-pool">
+            
+            <button type="button"
+                    *ngFor="let preset of availablePresetBadges"
+                    class="meta-tag-btn"
+                    [ngClass]="[getTagThemeClass(preset), selectedProductTags.includes(preset) ? 'badge-active' : '']"
+                    (click)="togglePresetBadge(preset)">
+              {{ preset }}
+              <i class="bi" [ngClass]="selectedProductTags.includes(preset) ? 'bi-check-circle-fill' : 'bi-plus'"></i>
+            </button>
+
+            <ng-container *ngFor="let tag of selectedProductTags; let idx = index">
+              <span *ngIf="!availablePresetBadges.includes(tag)" 
+                    class="meta-tag-btn tag-default badge-active">
+                {{ tag }}
+                <i class="bi bi-x-circle-fill delete-tag-trigger" (click)="removeCustomTag(idx)"></i>
+              </span>
+            </ng-container>
+
+          </div>
+
+          <input type="text" 
+                 class="tag-input-field" 
+                 [(ngModel)]="tagInputString"
+                 (keydown.enter)="addCustomTag($event)"
+                 placeholder="+ Add custom tag and press Enter...">
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="bottom-sticky-bar">
+    <span class="required-notice">* Required fields must be filled before saving</span>
+    <div class="action-buttons-wrapper">
+      <button class="btn-discard" routerLink="/products">Discard</button>
+      <button class="btn-draft" type="button" (click)="saveFullProduct(true)">Save as Draft</button>
+      <button class="btn-publish-submit" (click)="saveFullProduct(false)">Save & Publish</button>
+    </div>
+  </div>
+
+</div>

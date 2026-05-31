@@ -1,0 +1,250 @@
+<div class="metrics-summary-cards-row">
+
+  <div class="metric-summary-card">
+    <div class="metric-icon-box total-bg">
+      <i class="bi bi-box-seam-fill"></i>
+    </div>
+    <div class="metric-details">
+      <h3>{{ totalProductsCount }}</h3>
+      <p class="label-text">Total Products</p>
+      <span class="sub-hint-text">Live collection inventory</span>
+    </div>
+  </div>
+
+  <div class="metric-summary-card">
+    <div class="metric-icon-box active-bg">
+      <i class="bi bi-check-square-fill"></i>
+    </div>
+    <div class="metric-details">
+      <h3>{{ activeProductsCount }}</h3>
+      <p class="label-text">Active Products</p>
+      @if (totalProductsCount > 0) {
+        <span class="sub-hint-text">
+          {{ ((activeProductsCount / totalProductsCount) * 100) | number:'1.0-1' }}% of total
+        </span>
+      } @else {
+        <span class="sub-hint-text">0% of total</span>
+      }
+    </div>
+  </div>
+
+  <div class="metric-summary-card">
+    <div class="metric-icon-box categories-bg">
+      <i class="bi bi-grid-fill"></i>
+    </div>
+    <div class="metric-details">
+      <h3>{{ categoriesCount }}</h3>
+      <p class="label-text">Categories</p>
+      <span class="sub-hint-text" [title]="categoriesListSummary">{{ categoriesListSummary }}</span>
+    </div>
+  </div>
+
+</div>
+
+<div class="product-management-container">
+
+    <div class="header-row">
+        <h2>Product Management</h2>
+        <div class="header-actions">
+            <div class="search-box">
+                <input type="text" 
+                       [(ngModel)]="searchQuery" 
+                       (input)="filterProducts()" 
+                       placeholder="Search by product name...">
+                <i class="bi bi-search"></i>
+            </div>
+            <button class="filter-btn" (click)="toggleFilterDrawer(true)">
+                <i class="bi bi-funnel"></i>
+            </button>
+            <button class="add-user-btn" (click)="openAddProductModal()">Add Product</button>
+        </div>
+    </div>
+
+    @if (isFilterDrawerOpen) {
+      <div class="filter-drawer-backdrop" (click)="toggleFilterDrawer(false)">
+          <div class="filter-drawer-sheet" (click)="$event.stopPropagation()">
+              
+              <div class="drawer-header">
+                  <h3>Filter Products</h3>
+                  <button type="button" class="close-btn" (click)="toggleFilterDrawer(false)">
+                      <i class="bi bi-x-lg"></i>
+                  </button>
+              </div>
+
+              <div class="drawer-body filter-scrollable-content">
+                  
+                  <div class="filter-group">
+                      <span class="filter-group-label">Category</span>
+                      <div class="filter-pill-pool">
+                          <button type="button" class="filter-pill" [class.active]="filterState.category === 'ALL'" (click)="filterState.category = 'ALL'">All</button>
+                          <button type="button" class="filter-pill" [class.active]="filterState.category === 'Spices'" (click)="filterState.category = 'Spices'">Spices</button>
+                          <button type="button" class="filter-pill" [class.active]="filterState.category === 'Nuts'" (click)="filterState.category = 'Nuts'">Nuts</button>
+                          <button type="button" class="filter-pill" [class.active]="filterState.category === 'Seeds'" (click)="filterState.category = 'Seeds'">Seeds</button>
+                          <button type="button" class="filter-pill" [class.active]="filterState.category === 'Dry Fruits'" (click)="filterState.category = 'Dry Fruits'">Dry Fruits</button>
+                          <button type="button" class="filter-pill" [class.active]="filterState.category === 'Herbs'" (click)="filterState.category = 'Herbs'">Herbs</button>
+                      </div>
+                  </div>
+
+                  <div class="filter-group">
+                      <span class="filter-group-label">Status</span>
+                      <div class="filter-pill-pool">
+                          <button type="button" class="filter-pill" [class.active]="filterState.status === 'ALL'" (click)="filterState.status = 'ALL'">All</button>
+                          <button type="button" class="filter-pill" [class.active]="filterState.status === 'Active'" (click)="filterState.status = 'Active'">Active</button>
+                          <button type="button" class="filter-pill" [class.active]="filterState.status === 'Inactive'" (click)="filterState.status = 'Inactive'">Inactive</button>
+                          <button type="button" class="filter-pill" [class.active]="filterState.status === 'Draft'" (click)="filterState.status = 'Draft'">Draft</button>
+                      </div>
+                  </div>
+
+                  <div class="filter-group">
+                      <span class="filter-group-label">Stock Level</span>
+                      <div class="filter-pill-pool">
+                          <button type="button" class="filter-pill" [class.active]="filterState.stockLevel === 'ALL'" (click)="filterState.stockLevel = 'ALL'">All</button>
+                          <button type="button" class="filter-pill" [class.active]="filterState.stockLevel === 'In Stock'" (click)="filterState.stockLevel = 'In Stock'">In Stock</button>
+                          <button type="button" class="filter-pill" [class.active]="filterState.stockLevel === 'Low Stock'" (click)="filterState.stockLevel = 'Low Stock'">Low Stock</button>
+                          <button type="button" class="filter-pill" [class.active]="filterState.stockLevel === 'Out of Stock'" (click)="filterState.stockLevel = 'Out of Stock'">Out of Stock</button>
+                      </div>
+                  </div>
+
+                  <div class="filter-group">
+                      <span class="filter-group-label">Variant Type</span>
+                      <div class="filter-pill-pool">
+                          <button type="button" class="filter-pill" [class.active]="filterState.variantType === 'ALL'" (click)="filterState.variantType = 'ALL'">All</button>
+                          <button type="button" class="filter-pill" [class.active]="filterState.variantType === 'Loose'" (click)="filterState.variantType = 'Loose'">Loose</button>
+                          <button type="button" class="filter-pill" [class.active]="filterState.variantType === 'Bag'" (click)="filterState.variantType = 'Bag'">Bag</button>
+                          <button type="button" class="filter-pill" [class.active]="filterState.variantType === 'Packing'" (click)="filterState.variantType = 'Packing'">Packing</button>
+                      </div>
+                  </div>
+
+              </div>
+
+              <div class="drawer-footer filter-footer-actions">
+                  <button type="button" class="reset-filter-btn" (click)="resetFilters()">Reset All Filters</button>
+                  <button type="button" class="apply-filter-btn" (click)="applyFilters()">Apply Filters</button>
+              </div>
+
+          </div>
+      </div>
+    }
+
+    <div class="table-card" style="margin-bottom: 0; border-bottom-left-radius: 0; border-bottom-right-radius: 0;">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Image</th>
+                    <th>Product Name</th>
+                    <th>Product ID</th>
+                    <th>Category</th>
+                    <th>Variant Details</th>
+                    <th>Status</th>
+                    <th>Publish</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (product of paginatedProductsList; track product.id || product.productid) {
+                    <tr>
+                        <td>
+                            <div class="thumbnail-wrapper">
+                                <img [src]="product.images || 'assets/placeholder-spice.jpg'" 
+                                     (error)="$any($event.target).src = 'assets/placeholder-spice.jpg'" 
+                                     alt="Product Thumbnail">
+                            </div>
+                        </td>
+                        
+                        <td class="font-bold">{{ product.productname }}</td>
+                        <td><code>{{ product.productid }}</code></td>
+                        <td><span class="category-tag">{{ product.category }}</span></td>
+                        
+                        <td>{{ getVariantLabel(product.variant) }}</td>
+                        
+                        <td>
+                            <span class="badge" [class]="product.status === 'ACTIVE' || product.status === 'APPROVED' ? 'badge-active' : 'badge-inactive'">
+                                {{ product.status }}
+                            </span>
+                        </td>
+                        
+                        <td>
+                            <label class="switch">
+                                <input type="checkbox" [checked]="product.ispublished" (change)="togglePublish(product)">
+                                <span class="slider round"></span>
+                            </label>
+                        </td>
+                        
+                        <td>
+                            <div class="row-actions">
+                                <button class="edit-btn" [routerLink]="['/products/edit', product.id || product.productid]" title="Edit Product">
+                                    <i class="bi bi-pencil-square"></i>
+                                </button>
+                                <button class="delete-btn" (click)="deleteProduct(product.id || product.productid)" title="Delete Product">
+                                    <i class="bi bi-trash3"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                } @empty {
+                    <tr>
+                        <td colspan="8" class="text-center empty-state">
+                            <i class="bi bi-box-seam display-block spacing-bottom"></i>
+                            No matching spice products found in your inventory catalog data models.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="table-pagination-footer-bar">
+      
+      <div class="pagination-left-meta">
+        <span class="range-display-text">
+          Showing 
+          <strong>{{ productsList.length === 0 ? 0 : (currentPage - 1) * pageSize + 1 }}</strong> 
+          to 
+          <strong>{{ (currentPage * pageSize) > productsList.length ? productsList.length : (currentPage * pageSize) }}</strong> 
+          of 
+          <strong>{{ productsList.length }}</strong> products
+        </span>
+        
+        <div class="page-size-selector-wrapper">
+          <label>View Rows:</label>
+          <select [value]="pageSize" (change)="onPageSizeChange($event)" class="size-dropdown">
+            <option [value]="10">10</option>
+            <option [value]="25">25</option>
+            <option [value]="50">50</option>
+            <option [value]="100">100</option>
+          </select>
+        </div>
+      </div>
+
+      @if (totalPages > 0) {
+        <div class="pagination-right-navigation-controls">
+          <button type="button" 
+                  class="nav-arrow-btn" 
+                  [disabled]="currentPage === 1" 
+                  (click)="goToPage(currentPage - 1)">
+            <i class="bi bi-chevron-left"></i> Previous
+          </button>
+          
+          <div class="page-numbers-cluster">
+            @for (dummy of [].constructor(totalPages); track $index) {
+              <button type="button" 
+                      class="page-num-indicator"
+                      [class.active-page]="currentPage === ($index + 1)"
+                      (click)="goToPage($index + 1)">
+                {{ $index + 1 }}
+              </button>
+            }
+          </div>
+
+          <button type="button" 
+                  class="nav-arrow-btn" 
+                  [disabled]="currentPage === totalPages" 
+                  (click)="goToPage(currentPage + 1)">
+            Next <i class="bi bi-chevron-right"></i>
+          </button>
+        </div>
+      }
+
+    </div>
+
+</div>

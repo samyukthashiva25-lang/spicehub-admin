@@ -1,0 +1,384 @@
+<div class="user-management-container">
+
+    <div class="header-row">
+        <h2>User Management</h2>
+        <div class="header-actions">
+            <div class="search-box">
+                <input type="text" 
+                       [(ngModel)]="searchQuery" 
+                       (input)="filterUsersByShopName()" 
+                       placeholder="Search by shop name...">
+                <i class="bi bi-search"></i>
+            </div>
+            <button class="filter-btn" (click)="toggleFilterDrawer(true)">
+                <i class="bi bi-funnel"></i>
+            </button>
+            <button class="add-user-btn" (click)="openAddUserModal()">Add User</button>
+        </div>
+    </div>
+
+    <div class="tabs-nav">
+        <button [class.active]="activeTab === 'list'" (click)="activeTab = 'list'">User List</button>
+        <button [class.active]="activeTab === 'approvals'" (click)="activeTab = 'approvals'">Approvals</button>
+    </div>
+
+    @if (activeTab === 'list') {
+        <div class="table-card" style="margin-bottom: 0; border-bottom-left-radius: 0; border-bottom-right-radius: 0;">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Shop Name</th>
+                        <th>Owner Name</th>
+                        <th>Mobile Number</th>
+                        <th>GST Number</th>
+                        <th>Credit Limit</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (user of paginatedUsersList; track user.uid) {
+                        <tr>
+                            <td class="font-bold">{{ user.shopname }}</td>
+                            <td>{{ user.ownername }}</td>
+                            <td>{{ user.phonenumber }}</td>
+                            <td><code>{{ user.gstnumber }}</code></td>
+                            <td>{{ user.creditlimit | number }}</td>
+                            <td>
+                                <div class="status-toggle-wrapper">
+                                    <span class="toggle-label" [class.active-label]="user.status === 'INACTIVE'">Inactive</span>
+                                    <label class="switch">
+                                        <input type="checkbox"
+                                            [checked]="user.status === 'APPROVED' || user.status === 'ACTIVE'"
+                                            (change)="toggleUserStatus(user)">
+                                        <span class="slider"></span>
+                                    </label>
+                                    <span class="toggle-label"
+                                        [class.active-label]="user.status === 'APPROVED' || user.status === 'ACTIVE'">Active</span>
+                                </div>
+                            </td>
+                            <td>
+                                <button class="action-view-btn" (click)="openViewDetailsModal(user)">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    } @empty {
+                        <tr>
+                            <td colspan="7" class="text-center empty-state">
+                                No active user accounts found inside database collections.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-pagination-footer-bar">
+            <div class="pagination-left-meta">
+                <span class="range-display-text">
+                    Showing 
+                    <strong>{{ usersList.length === 0 ? 0 : (userCurrentPage - 1) * userPageSize + 1 }}</strong> 
+                    to 
+                    <strong>{{ (userCurrentPage * userPageSize) > usersList.length ? usersList.length : (userCurrentPage * userPageSize) }}</strong> 
+                    of 
+                    <strong>{{ usersList.length }}</strong> users
+                </span>
+                <div class="page-size-selector-wrapper">
+                    <label>View Rows:</label>
+                    <select [value]="userPageSize" (change)="onUserPageSizeChange($event)" class="size-dropdown">
+                        <option [value]="10">10</option>
+                        <option [value]="25">25</option>
+                        <option [value]="50">50</option>
+                        <option [value]="100">100</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="pagination-right-navigation-controls">
+                <button type="button" class="nav-arrow-btn" [disabled]="userCurrentPage === 1" (click)="goToUserPage(userCurrentPage - 1)">
+                    <i class="bi bi-chevron-left"></i> Previous
+                </button>
+                <div class="page-numbers-cluster">
+                    @for (dummy of [].constructor(userTotalPages); track $index) {
+                        <button type="button" 
+                                class="page-num-indicator"
+                                [class.active-page]="userCurrentPage === ($index + 1)"
+                                (click)="goToUserPage($index + 1)">
+                            {{ $index + 1 }}
+                        </button>
+                    }
+                </div>
+                <button type="button" class="nav-arrow-btn" [disabled]="userCurrentPage === userTotalPages" (click)="goToUserPage(userCurrentPage + 1)">
+                    Next <i class="bi bi-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    }
+
+    @if (activeTab === 'approvals') {
+        <div class="table-card" style="margin-bottom: 0; border-bottom-left-radius: 0; border-bottom-right-radius: 0;">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Shop Name</th>
+                        <th>Owner Name</th>
+                        <th>Mobile Number</th>
+                        <th>GST Number</th>
+                        <th>Shop Board Image</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (approval of paginatedApprovalsList; track approval.uid) {
+                        <tr>
+                            <td class="font-bold">{{ approval.shopname }}</td>
+                            <td>{{ approval.ownername }}</td>
+                            <td>{{ approval.phonenumber }}</td>
+                            <td><code>{{ approval.gstnumber }}</code></td>
+                            <td>
+                                <a href="#" class="image-link" (click)="$event.preventDefault(); openImagePreviewLightbox(approval)">
+                                    {{ approval.shopname ? (approval.shopname | lowercase) + '_board.jpg' : 'shop_board_attachment.jpg' }}
+                                    <i class="bi bi-paperclip"></i>
+                                </a>
+                            </td>
+                            <td>
+                                <div class="approval-actions">
+                                    <button class="reject-btn" (click)="handleReject(approval)"><i class="bi bi-x"></i></button>
+                                    <button class="approve-btn" (click)="handleApprove(approval)"><i class="bi bi-check"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    } @empty {
+                        <tr>
+                            <td colspan="6" class="text-center empty-state">
+                                No pending sign-off requests left in the approval pipeline queue.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-pagination-footer-bar">
+            <div class="pagination-left-meta">
+                <span class="range-display-text">
+                    Showing 
+                    <strong>{{ approvalsList.length === 0 ? 0 : (approvalCurrentPage - 1) * approvalPageSize + 1 }}</strong> 
+                    to 
+                    <strong>{{ (approvalCurrentPage * approvalPageSize) > approvalsList.length ? approvalsList.length : (approvalCurrentPage * approvalPageSize) }}</strong> 
+                    of 
+                    <strong>{{ approvalsList.length }}</strong> requests
+                </span>
+                <div class="page-size-selector-wrapper">
+                    <label>View Rows:</label>
+                    <select [value]="approvalPageSize" (change)="onApprovalPageSizeChange($event)" class="size-dropdown">
+                        <option [value]="10">10</option>
+                        <option [value]="25">25</option>
+                        <option [value]="50">50</option>
+                        <option [value]="100">100</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="pagination-right-navigation-controls">
+                <button type="button" class="nav-arrow-btn" [disabled]="approvalCurrentPage === 1" (click)="goToApprovalPage(approvalCurrentPage - 1)">
+                    <i class="bi bi-chevron-left"></i> Previous
+                </button>
+                <div class="page-numbers-cluster">
+                    @for (dummy of [].constructor(approvalTotalPages); track $index) {
+                        <button type="button" 
+                                class="page-num-indicator"
+                                [class.active-page]="approvalCurrentPage === ($index + 1)"
+                                (click)="goToApprovalPage($index + 1)">
+                            {{ $index + 1 }}
+                        </button>
+                    }
+                </div>
+                <button type="button" class="nav-arrow-btn" [disabled]="approvalCurrentPage === approvalTotalPages" (click)="goToApprovalPage(approvalCurrentPage + 1)">
+                    Next <i class="bi bi-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+
+        @if (isLightboxOpen) {
+            <div class="lightbox-backdrop" (click)="closeImagePreviewLightbox()">
+                <div class="lightbox-window-card" (click)="$event.stopPropagation()">
+                    <div class="lightbox-top-bar">
+                        <span class="file-name-heading">
+                            {{ lightboxTargetUser?.shopname ? (lightboxTargetUser.shopname | lowercase) + '_board.jpg' : 'img0398.jpg' }}
+                        </span>
+                        <button type="button" class="lightbox-exit-btn" (click)="closeImagePreviewLightbox()">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                    <div class="lightbox-viewing-stage">
+                        <img [src]="lightboxTargetUser?.image" alt="Shop Board Document Attachment Preview Row">
+                    </div>
+                </div>
+            </div>
+        }
+    }
+
+    @if (isFilterDrawerOpen) {
+        <div class="filter-drawer-backdrop" (click)="toggleFilterDrawer(false)">
+            <div class="filter-drawer-sheet" (click)="$event.stopPropagation()">
+                <div class="drawer-header">
+                    <h3>Filter Users</h3>
+                    <button type="button" class="close-btn" (click)="toggleFilterDrawer(false)">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+                <div class="drawer-body filter-scrollable-content">
+                    <div class="filter-group">
+                        <span class="filter-group-label">Status</span>
+                        <div class="filter-pill-pool">
+                            <button type="button" class="filter-pill" [class.active]="filterState.status === 'ALL'" (click)="filterState.status = 'ALL'">All</button>
+                            <button type="button" class="filter-pill" [class.active]="filterState.status === 'APPROVED'" (click)="filterState.status = 'APPROVED'">Active / Approved</button>
+                            <button type="button" class="filter-pill" [class.active]="filterState.status === 'INACTIVE'" (click)="filterState.status = 'INACTIVE'">Inactive</button>
+                            <button type="button" class="filter-pill" [class.active]="filterState.status === 'PENDING'" (click)="filterState.status = 'PENDING'">Pending Approvals</button>
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-group-label">Credit Limit Range</span>
+                        <div class="range-slider-wrapper">
+                            <input type="range" class="filter-range-slider" 
+                                   min="0" max="1000000" step="50000" 
+                                   [(ngModel)]="filterState.maxCreditLimit">
+                            <div class="range-values-row">
+                                <span>Rs. 0</span>
+                                <span class="current-range-indicator">Up to {{ filterState.maxCreditLimit | number }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="drawer-footer filter-footer-actions">
+                    <button type="button" class="reset-filter-btn" (click)="resetFilters()">Reset All Filters</button>
+                    <button type="button" class="apply-filter-btn" (click)="applyFilters()">Apply Filters</button>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (isDetailsModalOpen) {
+        <div class="drawer-backdrop" (click)="closeViewDetailsModal()">
+            <div class="drawer-sheet view-details-sheet" (click)="$event.stopPropagation()">
+                <div class="drawer-header no-border">
+                    <h3>User Details</h3>
+                    <button type="button" class="close-btn" (click)="closeViewDetailsModal()">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+                <div class="drawer-body view-details-body">
+                    <div class="profile-banner-card">
+                        <div class="profile-info-meta">
+                            <h2 class="banner-shop-name">{{ selectedUser?.shopname || 'N/A' }}</h2>
+                            <p class="banner-owner-sub">
+                                {{ selectedUser?.ownername || 'N/A' }} <span class="divider-pipe">|</span> {{ selectedUser?.phonenumber }}
+                            </p>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox"
+                                [checked]="selectedUser?.status === 'APPROVED' || selectedUser?.status === 'ACTIVE'"
+                                (change)="toggleUserStatus(selectedUser)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="details-metadata-grid">
+                        <div class="meta-data-item">
+                            <span class="meta-label">GST Number</span>
+                            <span class="meta-value text-bold-dark">{{ selectedUser?.gstnumber || 'N/A' }}</span>
+                        </div>
+                        <div class="meta-data-item">
+                            <span class="meta-label">Email Address</span>
+                            <span class="meta-value text-medium-dark">{{ selectedUser?.emailid || 'Not Provided' }}</span>
+                        </div>
+                    </div>
+                    <div class="showcase-section">
+                        <span class="meta-label spacing-bottom">Shop Board Photo</span>
+                        @if (selectedUser?.image) {
+                            <div class="image-thumbnail-frame">
+                                <img [src]="selectedUser?.image" alt="Shop Board Document Asset">
+                            </div>
+                        } @else {
+                            <div class="image-thumbnail-fallback">
+                                <i class="bi bi-image-alt"></i>
+                                <p>No shop board photo uploaded to this profile record.</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (isUserModalOpen) {
+        <div class="drawer-backdrop" (click)="closeUserModal()">
+            <div class="drawer-sheet" (click)="$event.stopPropagation()">
+                <div class="drawer-header">
+                    <h3>Add New User</h3>
+                    <button type="button" class="close-btn" (click)="closeUserModal()"><i class="bi bi-x-lg"></i></button>
+                </div>
+                <form (ngSubmit)="submitUserForm()">
+                    <div class="drawer-body">
+                        <div class="input-field">
+                            <input type="text" id="shopname" [(ngModel)]="newUser.shopname" name="shopname" required placeholder=" ">
+                            <label for="shopname">Shop Name<span class="required">*</span></label>
+                        </div>
+                        <div class="input-field">
+                            <input type="text" id="ownername" [(ngModel)]="newUser.ownername" name="ownername" required placeholder=" ">
+                            <label for="ownername">Owner Name<span class="required">*</span></label>
+                        </div>
+                        <div class="input-field">
+                            <input type="tel" id="phonenumber" [(ngModel)]="newUser.phonenumber" name="phonenumber" required placeholder=" ">
+                            <label for="phonenumber">Mobile Number<span class="required">*</span></label>
+                        </div>
+                        <div class="input-field">
+                            <input type="email" id="emailid" [(ngModel)]="newUser.emailid" name="emailid" placeholder=" ">
+                            <label for="emailid">Email ID</label>
+                        </div>
+                        <div class="input-field">
+                            <input type="text" id="gstnumber" [(ngModel)]="newUser.gstnumber" name="gstnumber" required placeholder=" ">
+                            <label for="gstnumber">GST Number<span class="required">*</span></label>
+                        </div>
+                        <div class="slider-control-group">
+                            <div class="slider-label-row">
+                                <span class="title">Set Credit Limit</span>
+                                <span class="limit-indicator">(Max 10,00,000)</span>
+                            </div>
+                            <input type="range" class="form-range-slider" min="10000" max="1000000" step="10000"
+                                [(ngModel)]="newUser.creditlimit" name="creditlimit">
+                            <div class="slider-values-row">
+                                <span class="current-val">{{ newUser.creditlimit | number }}</span>
+                                <span class="max-val">10,00,000</span>
+                            </div>
+                        </div>
+                        <div class="upload-section">
+                            <span class="section-label">Shop Board Image</span>
+                            <div class="dropzone-box">
+                                @if (newUser.image) {
+                                    <div class="shop-img-preview-overlay">
+                                        <img [src]="newUser.image" alt="Shop Preview">
+                                    </div>
+                                }
+                                @if (!newUser.image) {
+                                    <i class="bi bi-image upload-icon"></i>
+                                    <p>Drag & drop to upload or</p>
+                                }
+                                <label class="browse-btn-label">
+                                    {{ newUser.image ? 'Change Photo' : 'Browse' }}
+                                    <input type="file" (change)="handleImageUpload($event)" accept="image/*" style="display: none;">
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="drawer-footer">
+                        <button type="button" class="cancel-action-btn" (click)="closeUserModal()">Cancel</button>
+                        <button type="submit" class="submit-action-btn">Add User</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    }
+
+</div>
