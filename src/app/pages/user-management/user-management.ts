@@ -22,6 +22,10 @@ export class UserManagement implements OnInit {
   lightboxTargetUser: any = null;
   
   isFilterDrawerOpen: boolean = false;
+  isCreditLimitModalOpen: boolean = false;
+  creditLimitTargetUser: any = null;
+  promptCreditLimit: number = 10000; // Default baseline handle index position
+  isCreditLimitSubmitting: boolean = false;
 
   filterState = {
     status: 'ALL',
@@ -410,20 +414,43 @@ export class UserManagement implements OnInit {
   }
 
   handleApprove(user: User): void {
-    const userId = user.uid || '';
-    
+    this.creditLimitTargetUser = user;
+    this.promptCreditLimit = 10000; // Reset slider position default value
+    this.isCreditLimitSubmitting = false;
+    this.isCreditLimitModalOpen = true;
+    this.cdr.markForCheck();
+  }
+
+  // ✅ Step 2: Cancel handler closure
+  closeCreditLimitModal(): void {
+    this.isCreditLimitModalOpen = false;
+    this.creditLimitTargetUser = null;
+    this.cdr.markForCheck();
+  }
+
+  // ✅ Step 3: Dispatch approval payload downstream with selected credit limit
+  submitApprovalWithLimit(): void {
+    if (!this.creditLimitTargetUser) return;
+    this.isCreditLimitSubmitting = true;
+
+    const userId = this.creditLimitTargetUser.uid || '';
     const finalPayload = { 
-      ...user, 
-      status: 'APPROVED' 
+      ...this.creditLimitTargetUser, 
+      status: 'APPROVED',
+      creditlimit: this.promptCreditLimit
     };
 
+    // Calls your existing user update API architecture
     this.userService.updateCreditLimit(userId, finalPayload).subscribe({
-      next: (response: any) => {
-        this.notify.success(`Registration form accepted for "${user.shopname}".`); // ✅ Success Snackbar replacement
+      next: () => {
+        this.notify.success(`Registration form accepted for "${this.creditLimitTargetUser.shopname}" with limit ${this.promptCreditLimit}.`);
+        this.isCreditLimitModalOpen = false;
         this.loadUsers(); 
       },
-      error: (err: unknown) => {
-        this.notify.error('Failed to execute account activation approval process.'); // ✅ Error Snackbar replacement
+      error: () => {
+        this.isCreditLimitSubmitting = false;
+        this.notify.error('Failed to execute account activation approval process.');
+        this.cdr.markForCheck();
       }
     });
   }

@@ -1097,3 +1097,67 @@ input:checked + .slider:before { transform: translateX(14px); }
     }
   }
 }
+
+/* Custom Credit Limit Prompt Dialog CSS Modules */
+.limit-modal-overlay {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  background-color: rgba(0, 0, 0, 0.4); z-index: 2000;
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(2px); animation: fadeInOverlay 0.2s ease-out;
+}
+
+.limit-modal-content {
+  background: #ffffff; border-radius: 16px; width: 100%; max-width: 520px;
+  padding: 24px; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+  box-sizing: border-box; display: flex; flex-direction: column;
+}
+
+.limit-modal-header {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;
+  h3 { margin: 0; font-size: 18px; font-weight: 700; color: #1a1a1a; }
+  .btn-close-x { background: none; border: none; font-size: 24px; cursor: pointer; color: #888; &:hover { color: #000; } }
+}
+
+.vendor-summary-banner {
+  display: flex; justify-content: space-between; align-items: center;
+  background-color: #FFF5EC; border-radius: 12px; padding: 14px 18px; margin-bottom: 24px;
+  .vendor-identity, .vendor-tax { display: flex; flex-direction: column; }
+  .vendor-tax { text-align: right; }
+  .shop-title { font-weight: 800; font-size: 16px; color: #FF9933; }
+  .owner-meta { font-size: 12px; color: #666; margin-top: 2px; }
+  .gst-value { font-weight: 700; font-size: 14px; color: #262626; }
+  .tax-label { font-size: 11px; color: #888; margin-top: 2px; }
+}
+
+.slider-interactive-wrapper {
+  margin-bottom: 32px;
+  .slider-header-title { font-weight: 700; font-size: 15px; color: #262626; display: block; margin-bottom: 12px; }
+  .max-annotation { color: #888; font-weight: 400; font-size: 12px; margin-left: 4px; }
+  
+  .custom-orange-range-track {
+    -webkit-appearance: none; width: 100%; height: 6px; background: #eef0f2; border-radius: 4px; outline: none;
+    &::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none; width: 22px; height: 22px; border-radius: 50%;
+      background: #ffffff; border: 3px solid #FF9933; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    }
+  }
+  .slider-axis-labels { display: flex; justify-content: space-between; font-size: 13px; margin-top: 6px; }
+  .current-axis-text { font-weight: 700; color: #000; }
+  .max-axis-text { color: #8a8a8a; }
+}
+
+.limit-modal-footer {
+  display: flex; justify-content: flex-end; gap: 14px;
+  button { padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+  .action-btn-cancel { background: #ffffff; border: 1.5px solid #FF9933; color: #FF9933; &:hover { background: #FFF5EC; } }
+  .action-btn-approve { background: #FF9933; border: none; color: #ffffff; &:hover { background: #e07b1f; } }
+  button:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
+.action-spinner {
+  display: inline-block; width: 16px; height: 16px; border: 2.5px solid rgba(255,255,255,0.3);
+  border-radius: 50%; border-top-color: #fff; animation: spinLoop 0.8s linear infinite;
+}
+
+@keyframes fadeInOverlay { from { opacity: 0; } to { opacity: 1; } }
+@keyframes spinLoop { to { transform: rotate(360deg); } }

@@ -381,4 +381,63 @@
         </div>
     }
 
+    @if (isCreditLimitModalOpen) {
+        <div class="limit-modal-overlay" (click)="closeCreditLimitModal()">
+            <div class="limit-modal-content" (click)="$event.stopPropagation()">
+                
+                <div class="limit-modal-header">
+                    <h3>Set Credit Limit</h3>
+                    <button class="btn-close-x" (click)="closeCreditLimitModal()">&times;</button>
+                </div>
+
+                <div class="vendor-summary-banner" *ngIf="creditLimitTargetUser">
+                    <div class="vendor-identity">
+                        <span class="shop-title">{{ creditLimitTargetUser.shopname }}</span>
+                        <span class="owner-meta">{{ creditLimitTargetUser.ownername }} | {{ creditLimitTargetUser.phonenumber }}</span>
+                    </div>
+                    <div class="vendor-tax">
+                        <span class="gst-value">{{ creditLimitTargetUser.gstnumber || 'N/A' }}</span>
+                        <span class="tax-label">GST Number</span>
+                    </div>
+                </div>
+
+                <div class="slider-interactive-wrapper">
+                    <label class="slider-header-title">
+                        Credit Limit <span class="max-annotation">(Max 10,00,000)</span>
+                    </label>
+                    
+                    <input 
+                        type="range" 
+                        min="0" 
+                        max="1000000" 
+                        step="10000" 
+                        [(ngModel)]="promptCreditLimit" 
+                        class="custom-orange-range-track">
+                    
+                    <div class="slider-axis-labels">
+                        <span class="current-axis-text">{{ promptCreditLimit | number }}</span>
+                        <span class="max-axis-text">10,00,000</span>
+                    </div>
+                </div>
+
+                <div class="limit-modal-footer">
+                    <button 
+                        class="action-btn-cancel" 
+                        [disabled]="isCreditLimitSubmitting" 
+                        (click)="closeCreditLimitModal()">
+                        Cancel
+                    </button>
+                    <button 
+                        class="action-btn-approve" 
+                        [disabled]="isCreditLimitSubmitting" 
+                        (click)="submitApprovalWithLimit()">
+                        <span *ngIf="!isCreditLimitSubmitting">Approve</span>
+                        <span *ngIf="isCreditLimitSubmitting" class="action-spinner"></span>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    }
+
 </div>
